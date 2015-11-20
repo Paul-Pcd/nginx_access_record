@@ -1,0 +1,2 @@
+# nginx_access_record
+通过fluentd采集nginx日志，生成用户访问报表
