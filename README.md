@@ -8,12 +8,17 @@
 ## 需求分析
 用户访问记录报表包含如下信息:
 * 根据访问ip生成全国热力图
+  * 解析ip插入新集合ip_address: ip、城市名、经度、纬度、数量
 * 根据path生成热门文章列表
+  * 解析path插入新集合path: name, frequency
 * 根据agent生成浏览器、OS等信息饼图
+  * 解析agent插入新集合 browser: name, frequency
+  * 解析agent插入新集合 os: name, frequency  
 * 生成每天访问量曲线 
+  * 每次访问插入新集合 day_visit: datetime, frequency
 * 生成总的访问数量
 
-## 详细信息
+## 详情
 ### nginx日志地址
 /usr/local/var/log/nginx/access.log
 
@@ -41,3 +46,9 @@
     "time":"2015-11-20T07:19:52Z"
 }
 ```
+## 实现
+理想情况是做成流式计算, 实时处理每条nginx日志, 然后对数据库进行增量更新.  
+架构分为三层：  
+* Fluentd处理每条nginx access日志, 并更新到相应的数据库集合中
+* Django直接拿各集合的数据, 处理完之后传递给前端
+* 前端依赖EChart进行展现
