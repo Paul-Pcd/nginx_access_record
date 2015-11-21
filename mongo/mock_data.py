@@ -28,16 +28,10 @@ def mock_ip_list():
 def mock_os_list():
     """返回一组数据用于测试os
     """
-    return [
-    {
-    'name': 'Mac OS',
-    'visit_num': 20,
-    },
-    {
-    'name': 'Windows 10',
-    'visit_num': 30,
+    return {
+    'name': ['Mac OS', 'Windows 10', 'Linux'],
+    'visit_num': [100, 500, 1000],
     }
-    ]
 
 def mock_browser_list():
     """返回一组数据用于测试browser
@@ -70,16 +64,10 @@ def mock_url_path_list():
 def mock_day_visit_list():
     """返回一组数据用于测试day_visit
     """
-    return [
-    {
-    'date': '2015-11-19',
-    'visit_num': 10,
-    },
-    {
-    'date': '2015-11-18',
-    'visit_num': 20,
+    return {
+    'date':['11-10','11-11','11-12','11-13','11-14'],
+    'visit_num':[20, 10, 15, 30, 20]
     }
-    ]
 
 def mock_total_visit_num():
     """返回一组数据用于测试total_visit_num
