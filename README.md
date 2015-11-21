@@ -8,9 +8,9 @@
 ## 需求分析
 用户访问记录报表包含如下信息:
 * 根据访问ip生成全国热力图
-  * 解析ip插入新集合ip_address: ip、城市名、经度、纬度、数量
+  * 解析ip插入新集合ip: ip、城市名、经度、纬度、数量
 * 根据path生成热门文章列表
-  * 解析path插入新集合path: name, frequency
+  * 解析path插入新集合url_path: name, frequency
 * 根据agent生成浏览器、OS等信息饼图
   * 解析agent插入新集合 browser: name, frequency
   * 解析agent插入新集合 os: name, frequency  
@@ -29,7 +29,13 @@
 ### mongoDB数据库信息
 * 地址: 127.0.0.1:12345
 * 数据库名: access_record
-* 集合名: nginx_access_record
+* 集合名 
+  * nginx_access_record: 访问记录
+  * ip: ip、城市编号、城市名、经度、纬度、访问数量
+  * os: name、访问数量
+  * browser：name、访问数量
+  * url_path：name、访问数量
+  * day_visit：data、访问数量
 
 ### mongoDB数据格式
 ```
