@@ -2,6 +2,7 @@
 # _*_ coding:utf-8 _*_
 
 import re
+import json
 import models
 import urllib2
 from mongoengine import *
@@ -24,7 +25,6 @@ def get_os_name(agent_info):
 
     # GET "Macintosh; Inter Mac OS X 10.11; rv:42.0"
     pattern = re.compile(r'\(.+?\)')
-    # pattern = re.compile(r'.+\((.*)\).+')
     os_info_list = pattern.findall(agent_info)
     if not os_info_list:
         return 'UNKNOWN OS'
@@ -70,9 +70,23 @@ def get_ip_location_info(ip):
             'latitude': 80,
         }
     """
+    url = "http://apis.baidu.com/apistore/lbswebapi/iplocation?coor=bd09ll&ip={ip}".format(ip=ip)
 
+    req = urllib2.Request(url)
+    req.add_header("apikey", " bcce1190dfb38748afbc2ca5df311a70")
 
+    ip_location = urllib2.urlopen(req).read()
+    ip_location = json.loads(ip_location)
 
+    if not ip_location or ip_location['errNum'] != 0:
+        raise Exception('fail to get ip location in mongo_engine.get_ip_location_info')
+
+    return {
+    'city_code': ip_location['retData']['content']['address_detail']['city_code'],
+    'city_name': ip_location['retData']['address'],
+    'longitude': ip_location['retData']['content']['point']['x'],
+    'latitude': ip_location['retData']['content']['point']['y'],
+    }
 
 def process_total_nginx_access_log():
     """处理全量nginx_access_log
@@ -102,7 +116,17 @@ def process_total_nginx_access_log():
     for access_record in  models.NginxAccessRecord.objects:
         # 获取ip信息
         ip = access_record.host
-        city_details = get_city_details(ip)
+        city_location = get_ip_location_info(ip)
+        city_id = str(city_location['city_id'])
+
+        if city_id in city_info.keys():
+            city_info[city_id]['visit_num'] += 1
+        else:    
+            city_info[city_id] = {
+            'longitude':city_location['longitude'],
+            'latitude':city_location['latitude'],
+            'visit_num': 1,
+            }
 
         # 获取操作系统信息
         os_name = get_os_name(access_record.agent)
@@ -123,6 +147,7 @@ def process_total_nginx_access_log():
         # 总访问量
         total_visit_num += 1
  
+    print city_info
     print os_info
     print browser_info
     print url_path_info
@@ -195,3 +220,4 @@ def get_total_visit_num_info():
 
 if __name__ == '__main__':
     process_total_nginx_access_log()
+    # print get_ip_location_info("121.41.119.102")
