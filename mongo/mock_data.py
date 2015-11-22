@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # _*_ coding:utf-8 _*_
 
-def mock_ip_list():
+def mock_city_info():
     """返回一组测试数据用于测试ip
     """
     return [
@@ -25,7 +25,7 @@ def mock_ip_list():
     },
     ]
 
-def mock_os_list():
+def mock_os_info():
     """返回一组数据用于测试os
     """
     return {
@@ -33,35 +33,23 @@ def mock_os_list():
     'visit_num': [100, 500, 1000],
     }
 
-def mock_browser_list():
+def mock_browser_info():
     """返回一组数据用于测试browser
     """
-    return [
-    {
-    'name': 'firefox',
-    'visit_num': 10,
-    },
-    {
-    'name': 'safiri',
-    'visit_num': 20,
+    return {
+    'name': ['Firefox', 'Chrome', 'Safiri'],
+    'visit_num': [100, 500, 1000],
     }
-    ]
 
-def mock_url_path_list():
+def mock_url_path_info():
     """返回一组数据用于测试url_path
     """
-    return [
-    {
-    'name': '/index.php',
-    'visit_num': 10,
-    },
-    {
-    'name': '/index.php?r=aritcle',
-    'visit_num': 20,
+    return {
+    'name': ['/index.php', '/index.php?r=article', 'Safiri'],
+    'visit_num': [100, 500, 1000],
     }
-    ]
 
-def mock_day_visit_list():
+def mock_day_visit_info():
     """返回一组数据用于测试day_visit
     """
     return {

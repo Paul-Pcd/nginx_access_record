@@ -21,7 +21,6 @@ class Ip(DynamicDocument):
     """访问IP详细信息
     使用baiduApi获取ip地址位置
     ip 设为unique索引
-
     例子：
     curl  --get --swebapi/iplocation?ip=220.181.111.188'  -H 'apikey:bcce1190dfb38748afbc2ca5df311a70'
     {
@@ -52,7 +51,6 @@ class Ip(DynamicDocument):
     latitude = FloatField()
     visit_num = IntField()
     city_code = IntField()
-    # 详细地址信息
     privince = StringField()
     city = StringField()
     district = StringField()

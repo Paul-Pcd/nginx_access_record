@@ -5,268 +5,271 @@
 </head>
 <body>
     <!-- 为ECharts.map准备一个具备大小（宽高）的Dom -->
+    <h1>总访问量: {{ total_visit_num }}</h1>
     <div id="map" style="height:400px"></div>
     <div id="day_visit_curve" style="height:400px"></div>
-    <div id="os_pie" style="height:400px"></div>
-    <div id="browser_pie" style="height:400px"></div>
     <div id="url_path_pie" style="height:400px"></div>
+    <div id="browser_pie" style="height:400px"></div>
+    <div id="os_pie" style="height:400px"></div>
+
     <!-- ECharts标签式单文件引入 -->
     <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
     <script type="text/javascript">
         /* 展示访问热力图 */
-        // var myMap = echarts.init(document.getElementById('map')); 
-        // var placeList = [
-        //     {name:'临安', geoCoord:[119.72, 30.23]},
-        //     {name:'兰州', geoCoord:[103.73, 36.03]},
-        //     {name:'沧州', geoCoord:[116.83, 38.33]},
-        //     {name:'临沂', geoCoord:[118.35, 35.05]},
-        //     {name:'南充', geoCoord:[106.110698, 30.837793]},
-        //     {name:'天津', geoCoord:[117.2, 39.13]},
-        //     {name:'富阳', geoCoord:[119.95, 30.07]},
-        //     {name:'泰安', geoCoord:[117.13, 36.18]},
-        //     {name:'诸暨', geoCoord:[120.23, 29.71]},
-        //     {name:'郑州', geoCoord:[113.65, 34.76]},
-        //     {name:'哈尔滨', geoCoord:[126.63, 45.75]},
-        //     {name:'聊城', geoCoord:[115.97, 36.45]},
-        //     {name:'芜湖', geoCoord:[118.38, 31.33]},
-        //     {name:'唐山', geoCoord:[118.02, 39.63]},
-        //     {name:'平顶山', geoCoord:[113.29, 33.75]},
-        //     {name:'邢台', geoCoord:[114.48, 37.05]},
-        //     {name:'德州', geoCoord:[116.29, 37.45]},
-        //     {name:'济宁', geoCoord:[116.59, 35.38]},
-        //     {name:'荆州', geoCoord:[112.239741, 30.335165]},
-        //     {name:'宜昌', geoCoord:[111.3, 30.7]},
-        //     {name:'义乌', geoCoord:[120.06, 29.32]},
-        //     {name:'丽水', geoCoord:[119.92, 28.45]},
-        //     {name:'洛阳', geoCoord:[112.44, 34.7]},
-        //     {name:'秦皇岛', geoCoord:[119.57, 39.95]},
-        //     {name:'株洲', geoCoord:[113.16, 27.83]},
-        //     {name:'石家庄', geoCoord:[114.48, 38.03]},
-        //     {name:'莱芜', geoCoord:[117.67, 36.19]},
-        //     {name:'常德', geoCoord:[111.69, 29.05]},
-        //     {name:'保定', geoCoord:[115.48, 38.85]},
-        //     {name:'湘潭', geoCoord:[112.91, 27.87]},
-        //     {name:'金华', geoCoord:[119.64, 29.12]},
-        //     {name:'岳阳', geoCoord:[113.09, 29.37]},
-        //     {name:'长沙', geoCoord:[113, 28.21]},
-        //     {name:'衢州', geoCoord:[118.88, 28.97]},
-        //     {name:'廊坊', geoCoord:[116.7, 39.53]},
-        //     {name:'菏泽', geoCoord:[115.480656, 35.23375]},
-        //     {name:'合肥', geoCoord:[117.27, 31.86]},
-        //     {name:'武汉', geoCoord:[114.31, 30.52]},
-        //     {name:'大庆', geoCoord:[125.03, 46.58]}
-        // ]
-        // var option = {
-        //     backgroundColor: '#1b1b1b',
-        //     color: [
-        //         'rgba(255, 255, 255, 0.8)',
-        //         'rgba(14, 241, 242, 0.8)',
-        //         'rgba(37, 140, 249, 0.8)'
-        //     ],
-        //     title : {
-        //         text: '大规模MarkPoint特效',
-        //         subtext: '纯属虚构',
-        //         x:'center',
-        //         textStyle : {
-        //             color: '#fff'
-        //         }
-        //     },
-        //     legend: {
-        //         orient: 'vertical',
-        //         x:'left',
-        //         data:['强','中','弱'],
-        //         textStyle : {
-        //             color: '#fff'
-        //         }
-        //     },
-        //     toolbox: {
-        //         show : true,
-        //         orient : 'vertical',
-        //         x: 'right',
-        //         y: 'center',
-        //         feature : {
-        //             mark : {show: true},
-        //             dataView : {show: true, readOnly: false},
-        //             restore : {show: true},
-        //             saveAsImage : {show: true}
-        //         }
-        //     },
-        //     series : [
-        //         {
-        //             name: '弱',
-        //             type: 'map',
-        //             mapType: 'china',
-        //             itemStyle:{
-        //                 normal:{
-        //                     borderColor:'rgba(100,149,237,1)',
-        //                     borderWidth:1.5,
-        //                     areaStyle:{
-        //                         color: '#1b1b1b'
-        //                     }
-        //                 }
-        //             },
-        //             data : [],
-        //             markPoint : {
-        //                 symbolSize: 2,
-        //                 large: true,
-        //                 effect : {
-        //                     show: true
-        //                 },
-        //                 data : (function(){
-        //                     var data = [];
-        //                     var len = 3000;
-        //                     var geoCoord
-        //                     while(len--) {
-        //                         geoCoord = placeList[len % placeList.length].geoCoord;
-        //                         data.push({
-        //                             name : placeList[len % placeList.length].name + len,
-        //                             value : 10,
-        //                             geoCoord : [
-        //                                 geoCoord[0] + Math.random() * 5 - 2.5,
-        //                                 geoCoord[1] + Math.random() * 3 - 1.5
-        //                             ]
-        //                         })
-        //                     }
-        //                     return data;
-        //                 })()
-        //             }
-        //         },
-        //         {
-        //             name: '中',
-        //             type: 'map',
-        //             mapType: 'china',
-        //             data : [],
-        //             markPoint : {
-        //                 symbolSize: 3,
-        //                 large: true,
-        //                 effect : {
-        //                     show: true
-        //                 },
-        //                 data : (function(){
-        //                     var data = [];
-        //                     var len = 1000;
-        //                     var geoCoord
-        //                     while(len--) {
-        //                         geoCoord = placeList[len % placeList.length].geoCoord;
-        //                         data.push({
-        //                             name : placeList[len % placeList.length].name + len,
-        //                             value : 50,
-        //                             geoCoord : [
-        //                                 geoCoord[0] + Math.random() * 5 - 2.5,
-        //                                 geoCoord[1] + Math.random() * 3 - 1.5
-        //                             ]
-        //                         })
-        //                     }
-        //                     return data;
-        //                 })()
-        //             }
-        //         },
-        //         {
-        //             name: '强',
-        //             type: 'map',
-        //             mapType: 'china',
-        //             hoverable: false,
-        //             roam:true,
-        //             data : [],
-        //             markPoint : {
-        //                 symbol : 'diamond',
-        //                 symbolSize: 6,
-        //                 large: true,
-        //                 effect : {
-        //                     show: true
-        //                 },
-        //                 data : (function(){
-        //                     var data = [];
-        //                     var len = placeList.length;
-        //                     while(len--) {
-        //                         data.push({
-        //                             name : placeList[len].name,
-        //                             value : 90,
-        //                             geoCoord : placeList[len].geoCoord
-        //                         })
-        //                     }
-        //                     return data;
-        //                 })()
-        //             }
-        //         }
-        //     ]
-        // };
-        // myMap.setOption(option)
+        var myMap = echarts.init(document.getElementById('map')); 
+        var placeinfo = [
+            {name:'临安', geoCoord:[119.72, 30.23]},
+            {name:'兰州', geoCoord:[103.73, 36.03]},
+            {name:'沧州', geoCoord:[116.83, 38.33]},
+            {name:'临沂', geoCoord:[118.35, 35.05]},
+            {name:'南充', geoCoord:[106.110698, 30.837793]},
+            {name:'天津', geoCoord:[117.2, 39.13]},
+            {name:'富阳', geoCoord:[119.95, 30.07]},
+            {name:'泰安', geoCoord:[117.13, 36.18]},
+            {name:'诸暨', geoCoord:[120.23, 29.71]},
+            {name:'郑州', geoCoord:[113.65, 34.76]},
+            {name:'哈尔滨', geoCoord:[126.63, 45.75]},
+            {name:'聊城', geoCoord:[115.97, 36.45]},
+            {name:'芜湖', geoCoord:[118.38, 31.33]},
+            {name:'唐山', geoCoord:[118.02, 39.63]},
+            {name:'平顶山', geoCoord:[113.29, 33.75]},
+            {name:'邢台', geoCoord:[114.48, 37.05]},
+            {name:'德州', geoCoord:[116.29, 37.45]},
+            {name:'济宁', geoCoord:[116.59, 35.38]},
+            {name:'荆州', geoCoord:[112.239741, 30.335165]},
+            {name:'宜昌', geoCoord:[111.3, 30.7]},
+            {name:'义乌', geoCoord:[120.06, 29.32]},
+            {name:'丽水', geoCoord:[119.92, 28.45]},
+            {name:'洛阳', geoCoord:[112.44, 34.7]},
+            {name:'秦皇岛', geoCoord:[119.57, 39.95]},
+            {name:'株洲', geoCoord:[113.16, 27.83]},
+            {name:'石家庄', geoCoord:[114.48, 38.03]},
+            {name:'莱芜', geoCoord:[117.67, 36.19]},
+            {name:'常德', geoCoord:[111.69, 29.05]},
+            {name:'保定', geoCoord:[115.48, 38.85]},
+            {name:'湘潭', geoCoord:[112.91, 27.87]},
+            {name:'金华', geoCoord:[119.64, 29.12]},
+            {name:'岳阳', geoCoord:[113.09, 29.37]},
+            {name:'长沙', geoCoord:[113, 28.21]},
+            {name:'衢州', geoCoord:[118.88, 28.97]},
+            {name:'廊坊', geoCoord:[116.7, 39.53]},
+            {name:'菏泽', geoCoord:[115.480656, 35.23375]},
+            {name:'合肥', geoCoord:[117.27, 31.86]},
+            {name:'武汉', geoCoord:[114.31, 30.52]},
+            {name:'大庆', geoCoord:[125.03, 46.58]}
+        ]
+        var option = {
+            backgroundColor: '#1b1b1b',
+            color: [
+                'rgba(255, 255, 255, 0.8)',
+                'rgba(14, 241, 242, 0.8)',
+                'rgba(37, 140, 249, 0.8)'
+            ],
+            title : {
+                text: '用户访问分布',
+                x:'center',
+                textStyle : {
+                    color: '#fff'
+                }
+            },
+            legend: {
+                orient: 'vertical',
+                x:'left',
+                data:['强','中','弱'],
+                textStyle : {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                orient : 'vertical',
+                x: 'right',
+                y: 'center',
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
+            series : [
+                {
+                    name: '弱',
+                    type: 'map',
+                    mapType: 'china',
+                    itemStyle:{
+                        normal:{
+                            borderColor:'rgba(100,149,237,1)',
+                            borderWidth:1.5,
+                            areaStyle:{
+                                color: '#1b1b1b'
+                            }
+                        }
+                    },
+                    data : [],
+                    markPoint : {
+                        symbolSize: 2,
+                        large: true,
+                        effect : {
+                            show: true
+                        },
+                        data : (function(){
+                            var data = [];
+                            var len = 3000;
+                            var geoCoord
+                            while(len--) {
+                                geoCoord = placeinfo[len % placeinfo.length].geoCoord;
+                                data.push({
+                                    name : placeinfo[len % placeinfo.length].name + len,
+                                    value : 10,
+                                    geoCoord : [
+                                        geoCoord[0] + Math.random() * 5 - 2.5,
+                                        geoCoord[1] + Math.random() * 3 - 1.5
+                                    ]
+                                })
+                            }
+                            return data;
+                        })()
+                    }
+                },
+                {
+                    name: '中',
+                    type: 'map',
+                    mapType: 'china',
+                    data : [],
+                    markPoint : {
+                        symbolSize: 3,
+                        large: true,
+                        effect : {
+                            show: true
+                        },
+                        data : (function(){
+                            var data = [];
+                            var len = 1000;
+                            var geoCoord
+                            while(len--) {
+                                geoCoord = placeinfo[len % placeinfo.length].geoCoord;
+                                data.push({
+                                    name : placeinfo[len % placeinfo.length].name + len,
+                                    value : 50,
+                                    geoCoord : [
+                                        geoCoord[0] + Math.random() * 5 - 2.5,
+                                        geoCoord[1] + Math.random() * 3 - 1.5
+                                    ]
+                                })
+                            }
+                            return data;
+                        })()
+                    }
+                },
+                {
+                    name: '强',
+                    type: 'map',
+                    mapType: 'china',
+                    hoverable: false,
+                    roam:true,
+                    data : [],
+                    markPoint : {
+                        symbol : 'diamond',
+                        symbolSize: 6,
+                        large: true,
+                        effect : {
+                            show: true
+                        },
+                        data : (function(){
+                            var data = [];
+                            var len = placeinfo.length;
+                            while(len--) {
+                                data.push({
+                                    name : placeinfo[len].name,
+                                    value : 90,
+                                    geoCoord : placeinfo[len].geoCoord
+                                })
+                            }
+                            return data;
+                        })()
+                    }
+                }
+            ]
+        };
+        myMap.setOption(option);
 
-        // /* 展示每天访问曲线  */
-        // var myDayVisitCurve = echarts.init(document.getElementById('day_visit_curve'));
-        // var day_visit_list = {{ day_visit_list|safe }};
-        // var option = {
-        //     title : {
-        //         text: '每日访问数量',
-        //         subtext: '30天数据'
-        //     },
-        //     tooltip : {
-        //         trigger: 'axis'
-        //     },
-        //     legend: {
-        //         data:['每天访问量'],
-        //     },
-        //     toolbox: {
-        //         show : true,
-        //         feature : {
-        //             mark : {show: true},
-        //             dataView : {show: true, readOnly: false},
-        //             magicType : {show: true, type: ['line', 'bar']},
-        //             restore : {show: true},
-        //             saveAsImage : {show: true}
-        //         }
-        //     },
-        //     calculable : true,
-        //     xAxis : [
-        //         {
-        //             type : 'category',
-        //             boundaryGap : false,
-        //             data : day_visit_list['date'],
-        //         }
-        //     ],
-        //     yAxis : [
-        //         {
-        //             type : 'value',
-        //             axisLabel : {
-        //                 formatter: '{value}'
-        //             }
-        //         }
-        //     ],
-        //     series : [
-        //         {
-        //             name:'每天访问量',
-        //             type:'line',
-        //             data: day_visit_list['visit_num'],
-        //             markPoint : {
-        //                 data : [
-        //                     {type : 'max', name: '最大值'},
-        //                     {type : 'min', name: '最小值'}
-        //                 ]
-        //             },
-        //             markLine : {
-        //                 data : [
-        //                     {type : 'average', name: '平均值'}
-        //                 ]
-        //             }
-        //         },
-        //     ]
-        // };
-        // myDayVisitCurve.setOption(option)
+        /* 展示每天访问曲线  */
+        var myDayVisitCurve = echarts.init(document.getElementById('day_visit_curve'));
+
+        var day_visit_info = {{ day_visit_info|safe }};
+
+        var option = {
+            title : {
+                text: '每日访问数量',
+                subtext: '30天数据',
+            },
+            tooltip : {
+                trigger: 'axis',
+            },
+            legend: {
+                data:['每天访问量'],
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+                    magicType : {show: true, type: ['line', 'bar']},
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
+            calculable : true,
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : false,
+                    data : day_visit_info['date'],
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    axisLabel : {
+                        formatter: '{value}'
+                    }
+                }
+            ],
+            series : [
+                {
+                    name:'每天访问量',
+                    type:'line',
+                    data: day_visit_info['visit_num'],
+                    markPoint : {
+                        data : [
+                            {type : 'max', name: '最大值'},
+                            {type : 'min', name: '最小值'}
+                        ]
+                    },
+                    markLine : {
+                        data : [
+                            {type : 'average', name: '平均值'}
+                        ]
+                    }
+                },
+            ]
+        };
+        myDayVisitCurve.setOption(option);
 
         /* 展示OS饼图 */
         var myOsPie = echarts.init(document.getElementById('os_pie'));
-        var os_list = {{ os_list|safe }};
-        var os_data = []
-        for (var i = 0; i <= os_list['name']; i++) {
+        var os_info = {{ os_info|safe }};
+        var os_data = [];
+        for (var i = 0, il = os_info['name'].length; i < il; i++) {
             os_data.push({
-                'value':os_list['visit_num'][i],
-                'name':os_list['name'][i],
-            })
+                'value':os_info['visit_num'][i],
+                'name':os_info['name'][i],
+            });
         };
         var option = {
             title : {
-                text: '访问客户端OS分布',
+                text: '客户端OS分布',
                 x:'center'
             },
             tooltip : {
@@ -276,7 +279,7 @@
             legend: {
                 orient : 'vertical',
                 x : 'left',
-                data: os_list['name']
+                data: os_info['name']
             },
             toolbox: {
                 show : true,
@@ -307,24 +310,24 @@
                     radius : '55%',
                     center: ['50%', '60%'],
                     data: os_data,
-                    // data:[
-                    //     {value:335, name:'直接访问'},
-                    //     {value:310, name:'邮件营销'},
-                    //     {value:234, name:'联盟广告'},
-                    //     {value:135, name:'视频广告'},
-                    //     {value:1548, name:'搜索引擎'}
-                    // ]
                 }
             ]
         };
-        myOsPie.setOption(option)
+        myOsPie.setOption(option);
 
         /* 展示Browser饼图 */
         var myBrowserPie = echarts.init(document.getElementById('browser_pie'));
+        var browser_info = {{  browser_info|safe }};
+        var browser_data = [];
+        for (var i = 0, il = browser_info['name'].length; i < il; i++) {
+            browser_data.push({
+                'value':browser_info['visit_num'][i],
+                'name':browser_info['name'][i],
+            });
+        };
         var option = {
             title : {
-                text: '某站点用户访问来源',
-                subtext: '纯属虚构',
+                text: '客户端Browser分布',
                 x:'center'
             },
             tooltip : {
@@ -334,7 +337,7 @@
             legend: {
                 orient : 'vertical',
                 x : 'left',
-                data:['直接访问','邮件营销','联盟广告','视频广告','搜索引擎']
+                data: browser_info['name'],
             },
             toolbox: {
                 show : true,
@@ -364,24 +367,25 @@
                     type:'pie',
                     radius : '55%',
                     center: ['50%', '60%'],
-                    data:[
-                        {value:335, name:'直接访问'},
-                        {value:310, name:'邮件营销'},
-                        {value:234, name:'联盟广告'},
-                        {value:135, name:'视频广告'},
-                        {value:1548, name:'搜索引擎'}
-                    ]
+                    data: browser_data,
                 }
             ]
         };
-        myBrowserPie.setOption(option)
+        myBrowserPie.setOption(option);
 
         /* 展示url_path饼图 */
         var myUrlPathPie = echarts.init(document.getElementById('url_path_pie'));
+        var url_path_info = {{  url_path_info|safe }};
+        var url_path_data = [];
+        for (var i = 0, il = url_path_info['name'].length; i < il; i++) {
+            url_path_data.push({
+                'value':url_path_info['visit_num'][i],
+                'name':url_path_info['name'][i],
+            });
+        };
         var option = {
             title : {
-                text: '某站点用户访问来源',
-                subtext: '纯属虚构',
+                text: '热门文章',
                 x:'center'
             },
             tooltip : {
@@ -391,7 +395,7 @@
             legend: {
                 orient : 'vertical',
                 x : 'left',
-                data:['直接访问','邮件营销','联盟广告','视频广告','搜索引擎']
+                data: url_path_info['name'],
             },
             toolbox: {
                 show : true,
@@ -421,17 +425,10 @@
                     type:'pie',
                     radius : '55%',
                     center: ['50%', '60%'],
-                    data:[
-                        {value:335, name:'直接访问'},
-                        {value:310, name:'邮件营销'},
-                        {value:234, name:'联盟广告'},
-                        {value:135, name:'视频广告'},
-                        {value:1548, name:'搜索引擎'}
-                    ]
+                    data: url_path_data,
                 }
             ]
         };
-        myUrlPathPie.setOption(option)
+        myUrlPathPie.setOption(option);
     </script>
 </body>
-
