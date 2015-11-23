@@ -3,12 +3,22 @@
 
 import re
 import json
+import random
 import models
 import urllib2
 from mongoengine import *
 
 # 连接至mongoDB, 选择access_record数据库
 connect('access_record', host = '127.0.0.1', port=12345)
+
+class ProcessNginxLogError(Exception):
+    """解析Nginx日志错误异常
+    """
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
 
 def get_os_name(agent_info):
     """从agent信息中解析出操作系统名字
@@ -21,13 +31,14 @@ def get_os_name(agent_info):
         "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
     """
     if not agent_info:
-        raise Exception('agent_info is None in mongo_engine.get_os_name')
+        raise ProcessNginxLogError('agent_info is None in mongo_engine.get_os_name')
 
     # GET "Macintosh; Inter Mac OS X 10.11; rv:42.0"
-    pattern = re.compile(r'\(.+?\)')
+    pattern = re.compile(r'\((.+?)\)')
     os_info_list = pattern.findall(agent_info)
     if not os_info_list:
-        return 'UNKNOWN OS'
+        raise ProcessNginxLogError("no OS info in {agent_info}".format(agent_info=agent_info))
+
     # GET "Macintosh_Inter_Mac_OS_X_10.11_rv:42.0"
     os_info = '_'.join(re.split('[,; ]', os_info_list[0])).replace('__', '_')
     return os_info
@@ -43,7 +54,7 @@ def get_browser_name(agent_info):
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36"
     """
     if not agent_info:
-        raise Exception('agent_info is None in mongo_engine.get_browser_name')
+        raise ProcessNginxLogError('agent_info is None in mongo_engine.get_browser_name')
 
     agent_info = agent_info.lower()
 
@@ -55,7 +66,6 @@ def get_browser_name(agent_info):
         return 'Safiri'
     else:
         return agent_info.split(' ')[-1].split('/')[0]
-
 
 def get_ip_location_info(ip):
     """获取ip的地理信息
@@ -79,7 +89,7 @@ def get_ip_location_info(ip):
     ip_location = json.loads(ip_location)
 
     if not ip_location or ip_location['errNum'] != 0:
-        raise Exception('fail to get ip location in mongo_engine.get_ip_location_info')
+        raise ProcessNginxLogError("fail to get {ip} location in mongo_engine.get_ip_location_info".format(ip=ip))
 
     return {
     'city_code': ip_location['retData']['content']['address_detail']['city_code'],
@@ -88,7 +98,7 @@ def get_ip_location_info(ip):
     'latitude': ip_location['retData']['content']['point']['y'],
     }
 
-def process_total_nginx_access_log():
+def process_nginx_access_log():
     """处理全量nginx_access_log
 
     数据库: access_record 
@@ -107,117 +117,211 @@ def process_total_nginx_access_log():
         "time":"2015-11-21 01:54:18"
     }
     """
-    city_info = {}
+    location_info = {}
     os_info = {}
     browser_info = {}
     url_path_info = {}
     day_visit_info = {}
     total_visit_num = 0
+
     for access_record in  models.NginxAccessRecord.objects:
-        # 获取ip信息
-        ip = access_record.host
-        city_location = get_ip_location_info(ip)
-        city_id = str(city_location['city_id'])
+        try:
+            # 获取ip位置信息
+            ip = access_record.host
+            if ip == '127.0.0.1':
+                continue
 
-        if city_id in city_info.keys():
-            city_info[city_id]['visit_num'] += 1
-        else:    
-            city_info[city_id] = {
-            'longitude':city_location['longitude'],
-            'latitude':city_location['latitude'],
-            'visit_num': 1,
+            city_location = get_ip_location_info(ip)
+            city_code = str(city_location['city_code'])
+
+            if city_code in location_info.keys():
+                location_info[city_code]['visit_num'] += 1
+            else:    
+                location_info[city_code] = {
+                'longitude':float(city_location['longitude']) + random.random()*3.0 - 1.5,
+                'latitude':float(city_location['latitude']) + random.random()*2.0 - 1.0,
+                'visit_num': 1,
+                }
+
+            # 获取操作系统信息
+            os_name = get_os_name(access_record.agent)
+            os_info[os_name] = 1 if os_name not in os_info.keys() else os_info[os_name] + 1
+
+            # 获取浏览器信息
+            browser_name = get_browser_name(access_record.agent)
+            browser_info[browser_name] = 1 if browser_name not in browser_info.keys() else browser_info[browser_name] + 1
+
+            # 获取URL_PATH信息
+            url_path_name = access_record.path
+            url_path_info[url_path_name] = 1 if url_path_name not in url_path_info.keys() else url_path_info[url_path_name] + 1
+
+            # 获取每日访问信息
+            date = access_record.time.strftime('%Y-%m-%d %H:%M%S').split(' ')[0]
+            day_visit_info[date] = 1 if date not in day_visit_info.keys() else day_visit_info[date] + 1
+
+            # 总访问量
+            total_visit_num += 1
+        except ProcessNginxLogError, error:
+            pass
+
+    return {
+    'location_info': location_info,
+    'os_info': os_info,
+    'browser_info': browser_info,
+    'url_path_info': url_path_info,
+    'day_visit_info': day_visit_info,
+    'total_visit_num': total_visit_num,
+    }
+
+def format_access_info(access_info):
+    """格式化访问信息, 供ECHart展示
+
+    Args:
+        {} 例子
+        {
+            "browser_info":{
+                "Chrome":15,
+                "Firefox":6
+            },
+            "day_visit_info":{
+                "2015-11-20":2,
+                "2015-11-21":2,
+                "2015-11-22":17
+            },
+            "location_info":{
+                "16":{
+                    "latitude":"26.05011830",
+                    "visit_num":21,
+                    "longitude":"117.98494312"
+                }
+            },
+            "url_path_info":{
+                "/blog/index.php?r=catalogueFront/articles&id=10":2,
+                "/blog/assets/css/guai_blog.css":2,
+                "/blog/index.php?r=tagFront/articles&id=7":2,
+                "/blog/assets/2cdcf402/pager.css":2,
+                "/blog/index.php?r=admin/admin/index":13
+            },
+            "total_visit_num":21,
+            "os_info":{
+                "(Macintosh_Intel_Mac_OS_X_10.11_rv:42.0)":6,
+                "(Macintosh_Intel_Mac_OS_X_10_11_1)":15
             }
+        }
 
-        # 获取操作系统信息
-        os_name = get_os_name(access_record.agent)
-        os_info[os_name] = 1 if os_name not in os_info.keys() else os_info[os_name] + 1
-
-        # 获取浏览器信息
-        browser_name = get_browser_name(access_record.agent)
-        browser_info[browser_name] = 1 if browser_name not in browser_info.keys() else browser_info[browser_name] + 1
-
-        # 获取URL_PATH信息
-        url_path_name = access_record.path
-        url_path_info[url_path_name] = 1 if url_path_name not in url_path_info.keys() else url_path_info[url_path_name] + 1
-
-        # 获取每日访问信息
-        date = access_record.time.strftime('%Y-%m-%d %H:%M%S').split(' ')[0]
-        day_visit_info[date] = 1 if date not in day_visit_info.keys() else day_visit_info[date] + 1
-
-        # 总访问量
-        total_visit_num += 1
- 
-    print city_info
-    print os_info
-    print browser_info
-    print url_path_info
-    print day_visit_info
-    print total_visit_num
-
-def get_city_info():
-    """获取客户端ip信息
-
-    return:
-        [] 例子:
-    """
-    pass
-
-def get_day_visit_info():
-    """获取每天访问量数据
-
-    return:
-        {} 例子:
-        { 
-            'date':['11-10','11-11','11-12','11-13','11-14'],
-            'visit_num':[20, 10, 15, 30, 20]
-        }   
-    """
-    pass
-
-def get_os_info():
-    """获取客户端操作系统分布
-
-    return:
-        {} 例子:
+    Return:
         {
-            'name': ['Mac OS', 'Windows 10', 'Linux'],
-            'visit_num': [100, 500, 1000],
+            "browser_info":{
+                "name": ['Chrome', 'Firefox'],
+                "visit_num": [15, 6],
+            },
+            "day_visit_info":{
+                "date": ['2015-11-20', '2015-11-21', '2015-11-22'],
+                "visit_num": [2, 2, 17],
+            },
+            "location_info":{
+                "16":{
+                    "latitude":"26.05011830",
+                    "visit_num":21,
+                    "longitude":"117.98494312"
+                }
+            },
+            "url_path_info":{
+                "name": [
+                "/blog/index.php?r=catalogueFront/articles&id=10",
+                "/blog/assets/css/guai_blog.css",
+                "/blog/index.php?r=tagFront/articles&id=7",
+                "/blog/assets/2cdcf402/pager.css",
+                "/blog/index.php?r=admin/admin/index",
+                ],
+                "visit_num": [2, 2, 2, 2, 13],
+            },
+            "os_info":{
+                "name": [
+                "(Macintosh_Intel_Mac_OS_X_10.11_rv:42.0)",
+                "(Macintosh_Intel_Mac_OS_X_10_11_1)",
+                ]
+                "visit_num": [6, 15],
+            }
+            "total_visit_num":21,
         }
     """
-    pass
+    if not access_info:
+        raise Exception('access_info is None in mongo_engine.format_access_info')
 
-def get_browser_info():
-    """获取客户端浏览器分布
+    access_info_echart = {}
 
-    return:
-        {} 例子:
-        {
-            'name': ['Firefox', 'Chrome', 'Safiri'],
-            'visit_num': [100, 500, 1000],
-        }
+    # ip_location_info
+    # {
+    #     'name': '西安',
+    #     'value':  20,
+    #     'geoCoord': [117.27, 31.86],
+    # }
+    access_info_echart['location_info'] = []
+    for city_code,location_info in access_info['location_info'].items():
+        access_info_echart['location_info'].append({
+            'name': str(city_code),
+            'value': location_info['visit_num'],
+            'geoCoord': [location_info['longitude'], location_info['latitude']],
+            })
+
+    # os_info
+    os_name_list = []
+    os_visit_num_list = []
+    for name,visit_num in access_info['os_info'].items():
+        os_name_list.append(name)
+        os_visit_num_list.append(visit_num)
+    access_info_echart['os_info'] = {
+    'name': os_name_list,
+    'visit_num': os_visit_num_list,
+    }
+
+    # browser
+    browser_name_list = []
+    browser_visit_num_list = []
+    for name,visit_num in access_info['browser_info'].items():
+        browser_name_list.append(name)
+        browser_visit_num_list.append(visit_num)
+    access_info_echart['browser_info'] = {
+    'name': browser_name_list,
+    'visit_num': browser_visit_num_list,
+    }
+
+    # url_path
+    url_path_name_list = []
+    url_path_visit_num_list = []
+    for name,visit_num in access_info['url_path_info'].items():
+        url_path_name_list.append(name)
+        url_path_visit_num_list.append(visit_num)
+    access_info_echart['url_path_info'] = {
+    'name': url_path_name_list,
+    'visit_num': url_path_visit_num_list,
+    }
+
+    # day_visit
+    date_list = []
+    visit_num_list = []
+    for date,visit_num in access_info['day_visit_info'].items():
+        date_list.append(date)
+        visit_num_list.append(visit_num)
+    access_info_echart['day_visit_info'] = {
+    'date': date_list,
+    'visit_num': visit_num_list,
+    }
+
+    # total_visit_num
+    access_info_echart['total_visit_num'] = access_info['total_visit_num']
+
+    return access_info_echart
+
+def get_access_info():
+    """返回用户访问信息
     """
-    pass
-
-def get_url_path_info():
-    """获取热门文章列表
-
-    return:
-        {} 例子:
-        {
-            'name': ['Pythonic', '点滴', 'Linux命令行'],
-            'visit_num': [100, 500, 1000],
-        }
-    """
-    pass
-
-def get_total_visit_num_info():
-    """返回总访问次数
-
-    return:
-        int
-    """
-    pass
+    access_info = process_nginx_access_log()
+    return format_access_info(access_info)
 
 if __name__ == '__main__':
-    process_total_nginx_access_log()
+    # print json.dumps(process_nginx_access_log())
     # print get_ip_location_info("121.41.119.102")
+    # access_info = json.loads('{"browser_info": {"Chrome": 15, "Firefox": 6}, "day_visit_info": {"2015-11-20": 2, "2015-11-21": 2, "2015-11-22": 17}, "location_info": {"16": {"latitude": "26.05011830", "visit_num": 21, "longitude": "117.98494312"}}, "url_path_info": {"/blog/index.php?r=catalogueFront/articles&id=10": 2, "/blog/assets/css/guai_blog.css": 2, "/blog/index.php?r=tagFront/articles&id=7": 2, "/blog/assets/2cdcf402/pager.css": 2, "/blog/index.php?r=admin/admin/index": 13}, "total_visit_num": 21, "os_info": {"(Macintosh_Intel_Mac_OS_X_10.11_rv:42.0)": 6, "(Macintosh_Intel_Mac_OS_X_10_11_1)": 15}}')
+    # format_access_info(access_info)

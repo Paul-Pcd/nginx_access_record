@@ -17,47 +17,6 @@
     <script type="text/javascript">
         /* 展示访问热力图 */
         var myMap = echarts.init(document.getElementById('map')); 
-        var placeinfo = [
-            {name:'临安', geoCoord:[119.72, 30.23]},
-            {name:'兰州', geoCoord:[103.73, 36.03]},
-            {name:'沧州', geoCoord:[116.83, 38.33]},
-            {name:'临沂', geoCoord:[118.35, 35.05]},
-            {name:'南充', geoCoord:[106.110698, 30.837793]},
-            {name:'天津', geoCoord:[117.2, 39.13]},
-            {name:'富阳', geoCoord:[119.95, 30.07]},
-            {name:'泰安', geoCoord:[117.13, 36.18]},
-            {name:'诸暨', geoCoord:[120.23, 29.71]},
-            {name:'郑州', geoCoord:[113.65, 34.76]},
-            {name:'哈尔滨', geoCoord:[126.63, 45.75]},
-            {name:'聊城', geoCoord:[115.97, 36.45]},
-            {name:'芜湖', geoCoord:[118.38, 31.33]},
-            {name:'唐山', geoCoord:[118.02, 39.63]},
-            {name:'平顶山', geoCoord:[113.29, 33.75]},
-            {name:'邢台', geoCoord:[114.48, 37.05]},
-            {name:'德州', geoCoord:[116.29, 37.45]},
-            {name:'济宁', geoCoord:[116.59, 35.38]},
-            {name:'荆州', geoCoord:[112.239741, 30.335165]},
-            {name:'宜昌', geoCoord:[111.3, 30.7]},
-            {name:'义乌', geoCoord:[120.06, 29.32]},
-            {name:'丽水', geoCoord:[119.92, 28.45]},
-            {name:'洛阳', geoCoord:[112.44, 34.7]},
-            {name:'秦皇岛', geoCoord:[119.57, 39.95]},
-            {name:'株洲', geoCoord:[113.16, 27.83]},
-            {name:'石家庄', geoCoord:[114.48, 38.03]},
-            {name:'莱芜', geoCoord:[117.67, 36.19]},
-            {name:'常德', geoCoord:[111.69, 29.05]},
-            {name:'保定', geoCoord:[115.48, 38.85]},
-            {name:'湘潭', geoCoord:[112.91, 27.87]},
-            {name:'金华', geoCoord:[119.64, 29.12]},
-            {name:'岳阳', geoCoord:[113.09, 29.37]},
-            {name:'长沙', geoCoord:[113, 28.21]},
-            {name:'衢州', geoCoord:[118.88, 28.97]},
-            {name:'廊坊', geoCoord:[116.7, 39.53]},
-            {name:'菏泽', geoCoord:[115.480656, 35.23375]},
-            {name:'合肥', geoCoord:[117.27, 31.86]},
-            {name:'武汉', geoCoord:[114.31, 30.52]},
-            {name:'大庆', geoCoord:[125.03, 46.58]}
-        ]
         var option = {
             backgroundColor: '#1b1b1b',
             color: [
@@ -75,7 +34,7 @@
             legend: {
                 orient: 'vertical',
                 x:'left',
-                data:['强','中','弱'],
+                data:['访问者地理位置'],
                 textStyle : {
                     color: '#fff'
                 }
@@ -94,8 +53,9 @@
             },
             series : [
                 {
-                    name: '弱',
+                    name: '访问者地理位置',
                     type: 'map',
+                    // mapType: 'world',
                     mapType: 'china',
                     itemStyle:{
                         normal:{
@@ -113,83 +73,9 @@
                         effect : {
                             show: true
                         },
-                        data : (function(){
-                            var data = [];
-                            var len = 3000;
-                            var geoCoord
-                            while(len--) {
-                                geoCoord = placeinfo[len % placeinfo.length].geoCoord;
-                                data.push({
-                                    name : placeinfo[len % placeinfo.length].name + len,
-                                    value : 10,
-                                    geoCoord : [
-                                        geoCoord[0] + Math.random() * 5 - 2.5,
-                                        geoCoord[1] + Math.random() * 3 - 1.5
-                                    ]
-                                })
-                            }
-                            return data;
-                        })()
+                        data: {{ location_info|safe }},
                     }
                 },
-                {
-                    name: '中',
-                    type: 'map',
-                    mapType: 'china',
-                    data : [],
-                    markPoint : {
-                        symbolSize: 3,
-                        large: true,
-                        effect : {
-                            show: true
-                        },
-                        data : (function(){
-                            var data = [];
-                            var len = 1000;
-                            var geoCoord
-                            while(len--) {
-                                geoCoord = placeinfo[len % placeinfo.length].geoCoord;
-                                data.push({
-                                    name : placeinfo[len % placeinfo.length].name + len,
-                                    value : 50,
-                                    geoCoord : [
-                                        geoCoord[0] + Math.random() * 5 - 2.5,
-                                        geoCoord[1] + Math.random() * 3 - 1.5
-                                    ]
-                                })
-                            }
-                            return data;
-                        })()
-                    }
-                },
-                {
-                    name: '强',
-                    type: 'map',
-                    mapType: 'china',
-                    hoverable: false,
-                    roam:true,
-                    data : [],
-                    markPoint : {
-                        symbol : 'diamond',
-                        symbolSize: 6,
-                        large: true,
-                        effect : {
-                            show: true
-                        },
-                        data : (function(){
-                            var data = [];
-                            var len = placeinfo.length;
-                            while(len--) {
-                                data.push({
-                                    name : placeinfo[len].name,
-                                    value : 90,
-                                    geoCoord : placeinfo[len].geoCoord
-                                })
-                            }
-                            return data;
-                        })()
-                    }
-                }
             ]
         };
         myMap.setOption(option);
