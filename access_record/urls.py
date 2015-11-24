@@ -19,5 +19,6 @@ import mongo.views
 
 urlpatterns = [
     # url(r'^admin/', include(admin.site.urls)),
+    url(r'^$/', mongo.views.visit_record, name='index'),
     url(r'^visit_record/', mongo.views.visit_record, name='visit_record'),
 ]
