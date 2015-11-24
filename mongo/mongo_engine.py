@@ -321,7 +321,4 @@ def get_access_info():
     return format_access_info(access_info)
 
 if __name__ == '__main__':
-    # print json.dumps(process_nginx_access_log())
-    # print get_ip_location_info("121.41.119.102")
-    # access_info = json.loads('{"browser_info": {"Chrome": 15, "Firefox": 6}, "day_visit_info": {"2015-11-20": 2, "2015-11-21": 2, "2015-11-22": 17}, "location_info": {"16": {"latitude": "26.05011830", "visit_num": 21, "longitude": "117.98494312"}}, "url_path_info": {"/blog/index.php?r=catalogueFront/articles&id=10": 2, "/blog/assets/css/guai_blog.css": 2, "/blog/index.php?r=tagFront/articles&id=7": 2, "/blog/assets/2cdcf402/pager.css": 2, "/blog/index.php?r=admin/admin/index": 13}, "total_visit_num": 21, "os_info": {"(Macintosh_Intel_Mac_OS_X_10.11_rv:42.0)": 6, "(Macintosh_Intel_Mac_OS_X_10_11_1)": 15}}')
-    # format_access_info(access_info)
+    pass
