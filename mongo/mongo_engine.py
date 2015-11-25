@@ -4,12 +4,23 @@
 import re
 import json
 import random
+import MySQLdb
 import models
 import urllib2
 from mongoengine import *
 
 # 连接至mongoDB, 选择access_record数据库
-connect('access_record', host = '127.0.0.1', port=12345)
+# connect('access_record', host = '127.0.0.1', port=12345)
+connect('access_record', host = 'chenhuan0103.com', port=12345)
+
+class GetArticleNameError(Exception):
+    """获取Article名字失败
+    """
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
 
 class ProcessNginxLogError(Exception):
     """解析Nginx日志错误异常
@@ -98,6 +109,26 @@ def get_ip_location_info(ip):
     'latitude': ip_location['retData']['content']['point']['y'],
     }
 
+def get_article_title(article_id):
+    """根据article_id获取article名字
+
+    Args:
+        article_id: int
+
+    Returns:
+        article_name: string
+    """
+    conn = MySQLdb.connect(host="chenhuan0103.com", user="root", passwd="123456", db="blog")
+    cursor = conn.cursor() 
+
+    sql = "SELECT title from hachi_article WHERE id={article_id}".format(article_id=article_id)
+    cursor.execute(sql)
+    article_title = cursor.fetchone()
+
+    if not article_title:
+        raise GetArticleNameError('article_id={id} not exist'.format(id=article_id))
+    return article_title[0]
+
 def process_nginx_access_log():
     """处理全量nginx_access_log
 
@@ -151,9 +182,13 @@ def process_nginx_access_log():
             browser_name = get_browser_name(access_record.agent)
             browser_info[browser_name] = 1 if browser_name not in browser_info.keys() else browser_info[browser_name] + 1
 
-            # 获取URL_PATH信息
+            # 获取URL_PATH信息, URL = "index.php?r=articleFront/view&id="有效
             url_path_name = access_record.path
-            url_path_info[url_path_name] = 1 if url_path_name not in url_path_info.keys() else url_path_info[url_path_name] + 1
+            pattern = re.compile(r'.+articleFront/view&id=.+')
+            if pattern.match(url_path_name):
+                article_id = url_path_name.split("=")[-1]
+                article_title = get_article_title(article_id)
+                url_path_info[article_title] = 1 if article_title not in url_path_info.keys() else url_path_info[article_title] + 1
 
             # 获取每日访问信息
             date = access_record.time.strftime('%Y-%m-%d %H:%M%S').split(' ')[0]
@@ -321,4 +356,4 @@ def get_access_info():
     return format_access_info(access_info)
 
 if __name__ == '__main__':
-    pass
+    print get_article_title(2)

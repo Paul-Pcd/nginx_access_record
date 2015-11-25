@@ -77,8 +77,12 @@ WSGI_APPLICATION = 'access_record.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'blog',
+        'USER': 'root',
+        'PASSWORD': '123456',
+        'HOST': '121.41.119.102',
+        'PORT': 3306,
     }
 }
 
