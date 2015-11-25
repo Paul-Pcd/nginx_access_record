@@ -11,17 +11,9 @@ from django.http import HttpResponse
 from django.shortcuts import render, render_to_response
 
 # Create your views here.
-def visit_record(request):
-    """展示用户访问报表
+def visit_statistics(request):
+    """用户访问报表
     """
-    # 测试用数据
-    # location_info = mongo.mock_data.mock_location_info()
-    # day_visit_info = mongo.mock_data.mock_day_visit_info()
-    # os_info = mongo.mock_data.mock_os_info()
-    # browser_info = mongo.mock_data.mock_browser_info()
-    # url_path_info = mongo.mock_data.mock_url_path_info()
-    # total_visit_num = mongo.mock_data.mock_total_visit_num()
-
     # 线上数据
     access_info = mongo.mongo_engine.get_access_info()
 
