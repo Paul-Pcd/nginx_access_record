@@ -159,22 +159,25 @@ def process_nginx_access_log():
 
     for access_record in  models.NginxAccessRecord.objects:
         try:
-            # 获取URL_PATH信息
-            url_path_name = access_record.path
+            if access_record.host == '127.0.0.1':
+                continue
+            if access_record.agent.find('Baiduspider') != -1:
+                continue
+            if access_record.agent.find('Googlebot') != -1:
+                continue
             # URL=index.php?r=articleFront/view&id=才有效
             pattern = re.compile(r'.+articleFront/view&id=.+')
-            if not pattern.match(url_path_name):
+            if not pattern.match(access_record.path):
                 continue
 
+            # 获取URL_PATH信息
+            url_path_name = access_record.path
             article_id = url_path_name.split("=")[-1]
             article_title = get_article_title(article_id)
             url_path_info[article_title] = 1 if article_title not in url_path_info.keys() else url_path_info[article_title] + 1
 
             # 获取ip位置信息
             ip = access_record.host
-            if ip == '127.0.0.1':
-                continue
-
             city_location = get_ip_location_info(ip)
             city_code = str(city_location['city_code'])
 
@@ -330,7 +333,10 @@ def format_access_info(access_info):
     # url_path
     url_path_name_list = []
     url_path_visit_num_list = []
-    for name,visit_num in access_info['url_path_info'].items():
+    # 对url_path_info按visti_num排序,从小到大
+    url_path_info = access_info['url_path_info']
+    url_path_info = sorted(url_path_info.iteritems(), key=lambda d:d[1], reverse=False)
+    for (name,visit_num) in url_path_info:
         url_path_name_list.append(name)
         url_path_visit_num_list.append(visit_num)
     access_info_echart['url_path_info'] = {
@@ -360,5 +366,91 @@ def get_access_info():
     access_info = process_nginx_access_log()
     return format_access_info(access_info)
 
+def test_process_nginx_access_log():
+    """处理全量nginx_access_log
+
+    数据库: access_record 
+    集合: nginx_access_log
+    日志格式:
+    {
+        "_id":"564fcecb83fcecae86000001",
+        "host":"127.0.0.1",
+        "user":"-",
+        "method":"GET",
+        "path":"/",
+        "code":"200",
+        "size":"90827",
+        "referer":"-",
+        "agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:42.0) Gecko/20100101 Firefox/42.0",
+        "time":"2015-11-21 01:54:18"
+    }
+    """
+    location_info = {}
+    os_info = {}
+    browser_info = {}
+    url_path_info = {}
+    day_visit_info = {}
+    total_visit_num = 0
+
+    for access_record in  models.NginxAccessRecord.objects:
+        try:
+            # 获取URL_PATH信息
+            url_path_name = access_record.path
+            # URL=index.php?r=articleFront/view&id=才有效
+            pattern = re.compile(r'.+articleFront/view&id=.+')
+            if not pattern.match(url_path_name):
+                continue
+
+            article_id = url_path_name.split("=")[-1]
+            article_title = get_article_title(article_id)
+            url_path_info[article_title] = 1 if article_title not in url_path_info.keys() else url_path_info[article_title] + 1
+
+            # 获取ip位置信息
+            ip = access_record.host
+            if ip == '127.0.0.1':
+                continue
+
+            print access_record.agent
+            continue
+
+            city_location = get_ip_location_info(ip)
+            city_code = str(city_location['city_code'])
+
+            if city_code in location_info.keys():
+                location_info[city_code]['visit_num'] += 1
+            else:    
+                location_info[city_code] = {
+                'longitude':float(city_location['longitude']) + random.random()*3.0 - 1.5,
+                'latitude':float(city_location['latitude']) + random.random()*2.0 - 1.0,
+                'visit_num': 1,
+                }
+
+            # 获取操作系统信息
+            os_name = get_os_name(access_record.agent)
+            os_info[os_name] = 1 if os_name not in os_info.keys() else os_info[os_name] + 1
+
+
+            # 获取浏览器信息
+            browser_name = get_browser_name(access_record.agent)
+            browser_info[browser_name] = 1 if browser_name not in browser_info.keys() else browser_info[browser_name] + 1
+
+            # 获取每日访问信息
+            date = access_record.time.strftime('%Y-%m-%d %H:%M%S').split(' ')[0]
+            day_visit_info[date] = 1 if date not in day_visit_info.keys() else day_visit_info[date] + 1
+
+            # 总访问量
+            total_visit_num += 1
+        except ProcessNginxLogError, error:
+            pass
+
+    return {
+    'location_info': location_info,
+    'os_info': os_info,
+    'browser_info': browser_info,
+    'url_path_info': url_path_info,
+    'day_visit_info': day_visit_info,
+    'total_visit_num': total_visit_num,
+    }
+
 if __name__ == '__main__':
-    print get_article_title(38)
+    test_process_nginx_access_log()
