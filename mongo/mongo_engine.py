@@ -2,11 +2,12 @@
 # _*_ coding:utf-8 _*_
 
 import re
+import sys
 import json
 import random
-import MySQLdb
 import models
 import urllib2
+import MySQLdb
 from mongoengine import *
 
 # 连接至mongoDB, 选择access_record数据库
@@ -27,7 +28,6 @@ class ProcessNginxLogError(Exception):
     """
     def __init__(self, value):
         self.value = value
-
     def __str__(self):
         return repr(self.value)
 
@@ -165,9 +165,9 @@ def process_nginx_access_log():
                 continue
             if access_record.agent.find('Googlebot') != -1:
                 continue
-            # URL=index.php?r=articleFront/view&id=才有效
             pattern = re.compile(r'.+articleFront/view&id=.+')
-            if not pattern.match(access_record.path):
+            print access_record.path
+            if not access_record.path or not pattern.match(access_record.path):
                 continue
 
             # 获取URL_PATH信息
@@ -185,8 +185,8 @@ def process_nginx_access_log():
                 location_info[city_code]['visit_num'] += 1
             else:    
                 location_info[city_code] = {
-                'longitude':float(city_location['longitude']) + random.random()*3.0 - 1.5,
-                'latitude':float(city_location['latitude']) + random.random()*2.0 - 1.0,
+                'longitude':float(city_location['longitude']),
+                'latitude':float(city_location['latitude']),
                 'visit_num': 1,
                 }
 
@@ -311,7 +311,10 @@ def format_access_info(access_info):
     # os_info
     os_name_list = []
     os_visit_num_list = []
-    for name,visit_num in access_info['os_info'].items():
+    # 对操作系统按照visit_num从小到大排序
+    os_info = access_info['os_info']
+    os_info = sorted(os_info.iteritems(), key=lambda d:d[1], reverse=False)
+    for (name,visit_num) in os_info:
         os_name_list.append(name)
         os_visit_num_list.append(visit_num)
     access_info_echart['os_info'] = {
@@ -322,7 +325,10 @@ def format_access_info(access_info):
     # browser
     browser_name_list = []
     browser_visit_num_list = []
-    for name,visit_num in access_info['browser_info'].items():
+    # 对browser按visit_num排序, 从小到大
+    browser_info = access_info['browser_info']
+    browser_info = sorted(browser_info.iteritems(), key=lambda d:d[1], reverse=False)
+    for (name,visit_num) in browser_info:
         browser_name_list.append(name)
         browser_visit_num_list.append(visit_num)
     access_info_echart['browser_info'] = {
@@ -428,7 +434,6 @@ def test_process_nginx_access_log():
             # 获取操作系统信息
             os_name = get_os_name(access_record.agent)
             os_info[os_name] = 1 if os_name not in os_info.keys() else os_info[os_name] + 1
-
 
             # 获取浏览器信息
             browser_name = get_browser_name(access_record.agent)
