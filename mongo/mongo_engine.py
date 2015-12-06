@@ -261,7 +261,7 @@ def format_access_info(access_info):
     # 对url_path_info按visti_num排序,从小到大
     url_path_info = access_info['url_path_info']
     url_path_info = sorted(url_path_info.iteritems(), key=lambda d:d[1], reverse=False)
-    for (name,visit_num) in url_path_info:
+    for (name,visit_num) in url_path_info[-10:]:
         url_path_name_list.append(name)
         url_path_visit_num_list.append(visit_num)
     access_info_echart['url_path_info'] = {
@@ -272,7 +272,9 @@ def format_access_info(access_info):
     # day_visit
     date_list = []
     visit_num_list = []
-    for date,visit_num in access_info['day_visit_info'].items():
+    day_visit_info = access_info['day_visit_info']
+    day_visit_info = sorted(day_visit_info.iteritems(), key=lambda d:d[0], reverse=False)
+    for (date,visit_num) in day_visit_info:
         date_list.append(date)
         visit_num_list.append(visit_num)
     access_info_echart['day_visit_info'] = {

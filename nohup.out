@@ -5545,3 +5545,75 @@ Django version 1.8.6, using settings 'access_record.settings'
 Starting development server at http://0.0.0.0:8009/
 Quit the server with CONTROL-C.
 [29/Nov/2015 09:45:41] "GET / HTTP/1.1" 200 11929
+[29/Nov/2015 09:46:34] "GET / HTTP/1.1" 200 11929
+[29/Nov/2015 10:09:17] "GET / HTTP/1.1" 200 11929
+Performing system checks...
+
+System check identified no issues (0 silenced).
+
+You have unapplied migrations; your app may not work properly until they are applied.
+Run 'python manage.py migrate' to apply them.
+November 29, 2015 - 09:45:08
+Django version 1.8.6, using settings 'access_record.settings'
+Starting development server at http://0.0.0.0:8009/
+Quit the server with CONTROL-C.
+[06/Dec/2015 07:03:14] "GET / HTTP/1.1" 200 13385
+[06/Dec/2015 07:03:14] "GET /favicon.ico HTTP/1.1" 404 2095
+[06/Dec/2015 07:03:14] "GET /favicon.ico HTTP/1.1" 404 2095
+Performing system checks...
+
+System check identified no issues (0 silenced).
+
+You have unapplied migrations; your app may not work properly until they are applied.
+Run 'python manage.py migrate' to apply them.
+November 29, 2015 - 13:23:33
+Django version 1.8.6, using settings 'access_record.settings'
+Starting development server at http://0.0.0.0:8009/
+Quit the server with CONTROL-C.
+[06/Dec/2015 07:12:16] "GET / HTTP/1.1" 500 90864
+Performing system checks...
+
+System check identified no issues (0 silenced).
+
+You have unapplied migrations; your app may not work properly until they are applied.
+Run 'python manage.py migrate' to apply them.
+December 06, 2015 - 07:03:36
+Django version 1.8.6, using settings 'access_record.settings'
+Starting development server at http://0.0.0.0:8009/
+Quit the server with CONTROL-C.
+[06/Dec/2015 07:12:55] "GET / HTTP/1.1" 200 13106
+Performing system checks...
+
+System check identified no issues (0 silenced).
+
+You have unapplied migrations; your app may not work properly until they are applied.
+Run 'python manage.py migrate' to apply them.
+December 06, 2015 - 07:12:41
+Django version 1.8.6, using settings 'access_record.settings'
+Starting development server at http://0.0.0.0:8009/
+Quit the server with CONTROL-C.
+[06/Dec/2015 07:14:37] "GET / HTTP/1.1" 200 12287
+Performing system checks...
+
+System check identified no issues (0 silenced).
+
+You have unapplied migrations; your app may not work properly until they are applied.
+Run 'python manage.py migrate' to apply them.
+December 06, 2015 - 07:13:22
+Django version 1.8.6, using settings 'access_record.settings'
+Starting development server at http://0.0.0.0:8009/
+Quit the server with CONTROL-C.
+[06/Dec/2015 07:15:24] "GET / HTTP/1.1" 200 12306
+Performing system checks...
+
+System check identified no issues (0 silenced).
+
+You have unapplied migrations; your app may not work properly until they are applied.
+Run 'python manage.py migrate' to apply them.
+December 06, 2015 - 07:15:12
+Django version 1.8.6, using settings 'access_record.settings'
+Starting development server at http://0.0.0.0:8009/
+Quit the server with CONTROL-C.
+[06/Dec/2015 07:18:49] "GET / HTTP/1.1" 200 12322
+[06/Dec/2015 07:19:09] "GET / HTTP/1.1" 200 12324
+[06/Dec/2015 07:20:17] "GET / HTTP/1.1" 200 12370
