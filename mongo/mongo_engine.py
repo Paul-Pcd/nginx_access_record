@@ -123,6 +123,9 @@ def get_article_title(article_id):
     Returns:
         article_name: string
     """
+    if not article_id.isdigit():
+        raise GetArticleNameError('article_id={id} not exist'.format(id=article_id))
+
     conn = MySQLdb.connect(host="chenhuan0103.com", user="root", passwd="123456", db="blog", charset="utf8")
     cursor = conn.cursor() 
 
@@ -370,6 +373,8 @@ def process_nginx_access_log():
             # 总访问量
             total_visit_num += 1
         except ProcessNginxLogError, error:
+            pass
+        except GetArticleNameError, error: 
             pass
 
     return {
